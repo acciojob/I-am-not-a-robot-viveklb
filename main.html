@@ -7,7 +7,68 @@
 
   <title>I'm not a robot</title>
 
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .img1 {
+      content: url("https://picsum.photos/id/237/200/300");
+    }
+
+    .img2 {
+      content: url("https://picsum.photos/id/238/200/300");
+    }
+
+    .img3 {
+      content: url("https://picsum.photos/id/239/200/300");
+    }
+
+    .img4 {
+      content: url("https://picsum.photos/id/240/200/300");
+    }
+
+    .img5 {
+      content: url("https://picsum.photos/id/241/200/300");
+    }
+
+    img {
+      margin: 10px;
+      border: 5px solid #555;
+      width: 120px;
+      height: 150px;
+      object-fit: cover;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .flex {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .selected {
+      border: 5px solid rgb(0, 195, 255);
+    }
+
+    h3 {
+      text-align: center;
+    }
+
+    p {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    button {
+      margin: 20px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    .button-container {
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
@@ -15,6 +76,187 @@
   <main>
   </main>
 
-  <script src="./script.js"></script>
+  <script>
+    const main = document.querySelector("main");
+
+    // Heading
+    const heading = document.createElement("h3");
+    heading.id = "h";
+    heading.innerText =
+      "Please click on the identical tiles to verify that you are not a robot.";
+
+    main.appendChild(heading);
+
+    // Image container
+    const imageContainer = document.createElement("div");
+    imageContainer.className = "flex";
+    main.appendChild(imageContainer);
+
+    // Result paragraph
+    const para = document.createElement("p");
+    para.id = "para";
+    main.appendChild(para);
+
+    // Button container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "button-container";
+    main.appendChild(buttonContainer);
+
+    // Five unique image classes
+    const originalImages = [
+      "img1",
+      "img2",
+      "img3",
+      "img4",
+      "img5"
+    ];
+
+    // Pick one image randomly to duplicate
+    const duplicateImage =
+      originalImages[Math.floor(Math.random() * originalImages.length)];
+
+    // Create 6 images
+    const images = [...originalImages, duplicateImage];
+
+    // Shuffle images
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+
+      return array;
+    }
+
+    shuffle(images);
+
+    let selectedImages = [];
+    let resetButton = null;
+    let verifyButton = null;
+
+    // Create images
+    images.forEach((imageClass) => {
+      const img = document.createElement("img");
+
+      img.classList.add(imageClass);
+
+      // Store actual image type
+      img.dataset.image = imageClass;
+
+      img.addEventListener("click", function () {
+        // If verification has already happened, don't allow selection
+        if (para.innerText !== "") {
+          return;
+        }
+
+        // Toggle selected state
+        if (this.classList.contains("selected")) {
+          this.classList.remove("selected");
+
+          selectedImages = selectedImages.filter(
+            (image) => image !== this
+          );
+        } else {
+          this.classList.add("selected");
+          selectedImages.push(this);
+        }
+
+        updateButtons();
+      });
+
+      imageContainer.appendChild(img);
+    });
+
+    function updateButtons() {
+      // Reset button
+      if (selectedImages.length > 0) {
+        showResetButton();
+      } else {
+        removeResetButton();
+      }
+
+      // Verify should appear ONLY for exactly two images
+      if (selectedImages.length === 2) {
+        showVerifyButton();
+      } else {
+        removeVerifyButton();
+      }
+    }
+
+    function showResetButton() {
+      if (resetButton) return;
+
+      resetButton = document.createElement("button");
+      resetButton.id = "reset";
+      resetButton.innerText = "Reset";
+
+      resetButton.addEventListener("click", resetSelection);
+
+      buttonContainer.appendChild(resetButton);
+    }
+
+    function removeResetButton() {
+      if (resetButton) {
+        resetButton.remove();
+        resetButton = null;
+      }
+    }
+
+    function showVerifyButton() {
+      if (verifyButton) return;
+
+      verifyButton = document.createElement("button");
+      verifyButton.id = "verify";
+      verifyButton.innerText = "Verify";
+
+      verifyButton.addEventListener("click", verifyImages);
+
+      buttonContainer.appendChild(verifyButton);
+    }
+
+    function removeVerifyButton() {
+      if (verifyButton) {
+        verifyButton.remove();
+        verifyButton = null;
+      }
+    }
+
+    function resetSelection() {
+      selectedImages.forEach((image) => {
+        image.classList.remove("selected");
+      });
+
+      selectedImages = [];
+
+      para.innerText = "";
+
+      heading.innerText =
+        "Please click on the identical tiles to verify that you are not a robot.";
+
+      removeResetButton();
+      removeVerifyButton();
+    }
+
+    function verifyImages() {
+      if (selectedImages.length !== 2) {
+        return;
+      }
+
+      const firstImage = selectedImages[0].dataset.image;
+      const secondImage = selectedImages[1].dataset.image;
+
+      if (firstImage === secondImage) {
+        para.innerText = "You are a human. Congratulations!";
+      } else {
+        para.innerText =
+          "We can't verify you as a human. You selected the non-identical tiles.";
+      }
+
+      // Verify button disappears after verification
+      removeVerifyButton();
+    }
+  </script>
+
 </body>
 </html>
